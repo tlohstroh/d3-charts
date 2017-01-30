@@ -84,6 +84,16 @@
           fill: pink;
         }
 
+      /*#counter_table table tbody tr:nth-child(1){
+        background-color: #D91E18 }
+
+      #counter_table table tbody tr:nth-child(2){
+          background-color: #E87E04 }
+
+      #counter_table table tbody tr:nth-child(3){
+        background-color: #F4D03F }*/
+
+
     </style>
     <script src="https://d3js.org/d3.v4.min.js"></script>
 </head>
@@ -262,6 +272,92 @@
     // Add a month to the domain of the x scale
     // DONE Add a hover effect (http://bl.ocks.org/Caged/6476579)
     // Change the visualisation of a barchart to a linechart
+
+
+  // --------------
+  // NEST THE DATA
+  // --------------
+
+  // Make a nested dataset
+  // d3.nest is a special helper method to structure data
+  // using d3.sum we can sum up a single field of the collection
+  var groupByCategory = d3.nest()
+        .key(function(d) { return d.category; }).sortKeys(d3.ascending) //set a key which is the category and sort ascending
+        .rollup(function(v) { return d3.sum(v, function(d) {return d.value;})}) // add all the values per category and return the result
+        .entries(data); //
+
+  // Draw the dataset in a table
+  var counter_table = d3.select('#counter_table').append('table'); // select div with id countertable and append empty table tag to it
+
+  var counter_thead = counter_table.append('thead').append('tr') // appead table head tag to counter_table, append tr tag
+
+  counter_thead.append('th').text("category"); // append "category" to th
+  counter_thead.append('th').attr("class", "value").text("value"); // append a class(value) and the text "value to th"
+
+  var counter_tbody = counter_table.append('tbody') // append a table body tag to counter_table
+  var counter_tr = counter_tbody.selectAll('tr') // selectAll tr, match with data and append the right amount of tr's
+      .data(groupByCategory).enter()
+      .append('tr');
+
+  var color = d3.scaleOrdinal()
+        .range(["#D91E18", "#E87E04", "#F4D03F"])
+
+
+  counter_tr.append('td')
+      .html(function(d) { return d.key; }) // Append the right key to the td
+      .style("background-color", function(d) {
+        return color(d.key)});
+  counter_tr.append('td').html(function(d) { return d.value }); // Append the right value to the td
+
+  // ------------
+  // MAKE A DONUT
+  // ------------
+
+  // Set our default values for the SVG and add it
+  const donut_width = 250,
+        donut_height = 250,
+        donut_radius = 125;
+
+  var donut_svg = d3.select("#today").append("svg") // select element with id today and append an svg to it
+      .attr("width", donut_width) // give it
+      .attr("height", donut_height)
+  var donut = donut_svg.append("g")
+      .attr("transform", "translate(" + donut_width / 2 + "," + donut_height / 2 + ")"); // centerscreen in stead of top left. It is positioned in the center.
+
+  // Create a arc creator
+  // set its inner and outer radius
+  // The arc creator will generate paths for us
+  // A path is a special SVG element.
+  // It can basically take any shape and is used for complex shapes.
+  var arc = d3.arc()
+    .outerRadius(donut_radius - 10)
+    .innerRadius(donut_radius - 60);
+
+  // Create a pie layout
+  var pie = d3.pie()
+        // .sort(null)
+        .value(function(d) { return d.value; });
+
+  // Add a group and bind de data using the pie layout
+  var g = donut.selectAll(".arc")
+    .data(pie(groupByCategory))
+    .enter().append("g") // map data with amount of arcs we need
+    .attr("class", "arc");
+
+  // Create a color scale
+  // We want to be able to differentiate between all the sections of the donut
+  // An ordinal scale is what you would use to map values that are not quantitative.
+  // We will use it here for the categories.
+  // var color = d3.scaleOrdinal()
+  //       .range(["#D91E18", "#E87E04", "#F4D03F"])
+
+  // Draw the donut
+  // The arc function automatically gets the data from the databinding.
+  g.append("path") // svg path = specific vector element //
+    .attr("d", arc)
+    .style("fill", function(d) {
+        return color(d.data.key);
+  });
 
 </script>
 
