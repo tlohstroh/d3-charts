@@ -143,22 +143,29 @@
         d.date = parseDate(d.year);
         d.value = +d.value;
     });
-
+  // ------------
   // MAKE A TABLE
+  // ------------
+
   // Make a selection
+  // append <table>
   var table = d3.select('#table').append('table');
 
   // Add a formatter for dates
+  // date goes back to a string.
   var formatDate = d3.timeFormat("%Y-%m");
 
   // Add rows
+  // append <tbody>
   var tbody = table.append('tbody')
   var tr = tbody.selectAll('tr')
+    // create correct number or tr's compared with data
     .data(data).enter()
     .append('tr');
 
-  tr.append('td').html(function(d) { return formatDate(d.date); });
-  tr.append('td').html(function(d) { return d.category });
+  //
+  tr.append('td').html(function(d) { return formatDate(d.date); }); // create human readable date (string)
+  tr.append('td').html(function(d) { return d.category }); // creates new empty td, places html in it
   tr.append('td').html(function(d) { return d.value });
 
   // Add headers for the table
@@ -170,62 +177,69 @@
 
   // MAKE A BARCHART
   // Add the SVG (scalable vector graphics)
-  var month_margin = {top: 20, right: 20, bottom: 70, left: 40},
-    month_width = 900 - month_margin.left - month_margin.right,
+  var month_margin = {top: 20, right: 20, bottom: 70, left: 40}, // object with all the margins
+    month_width = 900 - month_margin.left - month_margin.right, //
     month_height = 300 - month_margin.top - month_margin.bottom;
 
 
-  var svg = d3.select("#month").append("svg")
+  var svg = d3.select("#month").append("svg") // select div with id month and append
       .attr("width", month_width + month_margin.left + month_margin.right)
       .attr("height", month_height + month_margin.top + month_margin.bottom)
-      .append("g")
+      .append("g") // append group
       .attr("transform",
-          "translate(" + month_margin.left + "," + month_margin.top + ")");
+          "translate(" + month_margin.left + "," + month_margin.top + ")"); // 40 to the right and 20 down
+  // inside the svg is right now the last element you selcted or appeded, so in this case the group.
+
+  // TODO
+  // var last_month = new Date[date.lenght-1].date;
+  // last_month.setMonth(last_month.getMonth() + 1)
 
   // Create the scales
   // For the x we use a timescale, because we have dates.
-  var x = d3.scaleTime()
-    .range([0, month_width])
-    .domain([data[0].date, data[data.length-1].date]);
+  var x = d3.scaleTime() // scaleTime knows it is about Time and can handle this.
+    .range([0, month_width]) // size of the x-axis in pixels
+    .domain([data[0].date, data[data.length-1].date]); // mimimun date and maximum date
 
   // For the y we use a linear scale.
   var y = d3.scaleLinear()
-    .range([month_height, 0])
-    .domain([0, d3.max(data, function(d) { return d.value; })]);
+    .range([month_height, 0]) // size of the y axis in pixels
+    .domain([0, d3.max(data, function(d) { return d.value; })]); // from 0 to maximum value in data
+
+  valueAmount = data.length
 
   // Draw the bars
   // We add a rect element to the SVG group here.
   // SVG's have different properties as regular HTML elements. fill determines the color of a rect element.
   svg.selectAll("rect")
-        .data(data)
-        .enter().append("rect")
+        .data(data) //
+        .enter().append("rect") // enter creates empty rect and makes a connection with the data (for each entry in data we want a rect)
         .attr("class", "bar")
-        // .style("fill", "#019875")
-        .attr("x", function(d) { return x(d.date); })
+        // .style("fill", "#019875") // adds attribute for style in the html!
+        .attr("x", function(d) { return x(d.date); }) // translates date to pixelvalue?
         // TODO Make the bar width relative to the amount of data
-        .attr("width", 50)
-        .attr("y", function(d) { return y(d.value); })
+        .attr("width", (month_width/valueAmount)) // set width of rect and adds width attribute to html
+        .attr("y", function(d) { return y(d.value); }) //
         .attr("height", function(d) { return month_height - y(d.value); });
 
   // Add axis for y
-  var yAxis = d3.axisLeft()
-    .scale(y)
-    .tickSize(-month_width) //as wide as our graph
+  var yAxis = d3.axisLeft() // set var to axisleft which contains a collection of methods to draw axis
+    .scale(y) // we use range and domain from y
+    .tickSize(-month_width) //as wide as our graph(lenght of the tick)
     .ticks(3);
 
-  svg.append("g")
+  svg.append("g") // append group ( = html element)
       .attr("class", "y axis")
       .call(yAxis)
 
   // Add axis for x
   var xAxis = d3.axisBottom()
-     .scale(x)
-     .tickFormat(d3.timeFormat("%Y-%m"));
+     .scale(x) // translate range to pixels on the screen
+     .tickFormat(d3.timeFormat("%Y-%m")); // format what you want your tick to look like
 
 
-  svg.append("g")
+  svg.append("g") // append group ( = html element)
      .attr("class", "x axis")
-     .attr("transform", "translate(0," + month_height + ")")
+     .attr("transform", "translate(0," + month_height + ")") // make the axis appear at the bottom of the graph in stead of at the top!! Relative to svg
      .call(xAxis)
 
   // IMPROVE THE BARCHART
