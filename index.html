@@ -75,6 +75,15 @@
         .y.axis path.domain{
             stroke: none;
         }
+
+        .bar {
+          fill: #019875;
+        }
+
+        .bar:hover {
+          fill: pink;
+        }
+
     </style>
     <script src="https://d3js.org/d3.v4.min.js"></script>
 </head>
@@ -124,7 +133,8 @@
             {year: "2013-11", value: 392, category: "shoes"},
             {year: "2013-12", value: 433, category: "shoes"},
             {year: "2014-01", value: 455, category: "shoes"},
-            {year: "2014-02", value: 478, category: "shoes"}
+            {year: "2014-02", value: 478, category: "shoes"},
+            // {year: "2014-03", value: 0, category: "shoes"}
         ];
 
     var parseDate = d3.timeParse("%Y-%m");
@@ -174,10 +184,14 @@
 
   // Create the scales
   // For the x we use a timescale, because we have dates.
-  var x = d3.scaleTime().range([0, month_width]).domain([data[0].date, data[data.length-1].date]);
+  var x = d3.scaleTime()
+    .range([0, month_width])
+    .domain([data[0].date, data[data.length-1].date]);
 
   // For the y we use a linear scale.
-  var y = d3.scaleLinear().range([month_height, 0]).domain([0, d3.max(data, function(d) { return d.value; })]);
+  var y = d3.scaleLinear()
+    .range([month_height, 0])
+    .domain([0, d3.max(data, function(d) { return d.value; })]);
 
   // Draw the bars
   // We add a rect element to the SVG group here.
@@ -185,8 +199,10 @@
   svg.selectAll("rect")
         .data(data)
         .enter().append("rect")
-        .style("fill", "#019875")
+        .attr("class", "bar")
+        // .style("fill", "#019875")
         .attr("x", function(d) { return x(d.date); })
+        // TODO Make the bar width relative to the amount of data
         .attr("width", 50)
         .attr("y", function(d) { return y(d.value); })
         .attr("height", function(d) { return month_height - y(d.value); });
@@ -212,7 +228,7 @@
      .attr("transform", "translate(0," + month_height + ")")
      .call(xAxis)
 
-  // Improve the BARCHART
+  // IMPROVE THE BARCHART
   // Add a number to the top of each bar. The adding of a text is done with a SVG
   // text element. The code to draw the text looks quite similar to the code to
   // draw the rectangles of our bars.
@@ -228,6 +244,10 @@
     .attr("dx", ".7em") //vertical align middle
     .text(function(d){ return d.value; });
 
+    // Make the bar width relative to the amount of data
+    // Add a month to the domain of the x scale
+    // DONE Add a hover effect (http://bl.ocks.org/Caged/6476579)
+    // Change the visualisation of a barchart to a linechart
 
 </script>
 
