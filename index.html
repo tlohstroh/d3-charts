@@ -212,6 +212,22 @@
      .attr("transform", "translate(0," + month_height + ")")
      .call(xAxis)
 
+  // Improve the BARCHART
+  // Add a number to the top of each bar. The adding of a text is done with a SVG
+  // text element. The code to draw the text looks quite similar to the code to
+  // draw the rectangles of our bars.
+  svg.selectAll("label")
+    .data(data)
+    .enter()
+    .append("text")
+    .attr("class", "label")
+    .style("fill", "#019875")
+    .attr("y", function(d) { return y(d.value); })
+    .attr("x", function(d) { return x(d.date); })
+    .attr("dy", "-.35em") //vertical align middle
+    .attr("dx", ".7em") //vertical align middle
+    .text(function(d){ return d.value; });
+
 
 </script>
 
