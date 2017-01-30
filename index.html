@@ -158,6 +158,60 @@
   thead.append('th').text("category");
   thead.append('th').attr("class", "value").text("value");
 
+  // MAKE A BARCHART
+  // Add the SVG (scalable vector graphics)
+  var month_margin = {top: 20, right: 20, bottom: 70, left: 40},
+    month_width = 900 - month_margin.left - month_margin.right,
+    month_height = 300 - month_margin.top - month_margin.bottom;
+
+
+  var svg = d3.select("#month").append("svg")
+      .attr("width", month_width + month_margin.left + month_margin.right)
+      .attr("height", month_height + month_margin.top + month_margin.bottom)
+      .append("g")
+      .attr("transform",
+          "translate(" + month_margin.left + "," + month_margin.top + ")");
+
+  // Create the scales
+  // For the x we use a timescale, because we have dates.
+  var x = d3.scaleTime().range([0, month_width]).domain([data[0].date, data[data.length-1].date]);
+
+  // For the y we use a linear scale.
+  var y = d3.scaleLinear().range([month_height, 0]).domain([0, d3.max(data, function(d) { return d.value; })]);
+
+  // Draw the bars
+  // We add a rect element to the SVG group here.
+  // SVG's have different properties as regular HTML elements. fill determines the color of a rect element.
+  svg.selectAll("rect")
+        .data(data)
+        .enter().append("rect")
+        .style("fill", "#019875")
+        .attr("x", function(d) { return x(d.date); })
+        .attr("width", 50)
+        .attr("y", function(d) { return y(d.value); })
+        .attr("height", function(d) { return month_height - y(d.value); });
+
+  // Add axis for y
+  var yAxis = d3.axisLeft()
+    .scale(y)
+    .tickSize(-month_width) //as wide as our graph
+    .ticks(3);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+
+  // Add axis for x
+  var xAxis = d3.axisBottom()
+     .scale(x)
+     .tickFormat(d3.timeFormat("%Y-%m"));
+
+
+  svg.append("g")
+     .attr("class", "x axis")
+     .attr("transform", "translate(0," + month_height + ")")
+     .call(xAxis)
+
 
 </script>
 
